@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Game</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .quiz-container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        display: none; /* Hidden at start */
+    }
+    #start-screen {
+        background-color: white;
+        padding: 40px 20px;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+    }
+    #start-screen h1 { color: #2c3e50; margin-bottom: 10px; }
+    #start-screen p { color: #7f8c8d; margin-bottom: 20px; }
+    h2 { color: #2c3e50; font-size: 18px; margin-bottom: 15px; }
+    .top-bar { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; }
+    #timer { color: #e74c3c; }
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .option-btn {
+        background-color: #f4f4f9;
+        border: 2px solid #ccc;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .option-btn:hover { background-color: #e0e0e0; }
+    .option-btn.correct { background-color: #4CAF50; color: white; border-color: #4CAF50; }
+    .option-btn.wrong { background-color: #f44336; color: white; border-color: #f44336; }
+    #result-message { font-weight: bold; font-size: 18px; margin-top: 15px; height: 20px; }
+    .btn {
+        margin-top: 15px;
+        padding: 12px 25px;
+        background-color: #2c3e50;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .btn:hover { background-color: #34495e; }
+    #next-btn { display: none; }
+    #restart-btn { display: none; background-color: #27ae60; }
+    .footer {
+        margin-top: 15px;
+        font-size: 12px;
+        color: #7f8c8d;
+        border-top: 1px solid #ddd;
+        padding-top: 10px;
+    }
+</style>
+</head>
+<body>
+
+
+<div id="start-screen">
+    <h1>Richie's Quiz Game</h1>
+    <p>10 Levels | 50 Questions | 30s Timer</p>
+    <button class="btn" onclick="startGame()">Start Game</button>
+    <p style="margin-top:20px; color:#ccc; font-size:14px;">Made with ❤️ by Richie</p>
+</div>
+
+<div class="quiz-container">
+    <div class="top-bar">
+        <div id="score-display">Level: 1 | Score: 0</div>
+        <div id="timer">Time: 30s</div>
+    </div>
+    <h2 id="question">Loading...</h2>
+    <div class="options">
+        <button class="option-btn"></button>
+        <button class="option-btn"></button>
+        <button class="option-btn"></button>
+        <button class="option-btn"></button>
+    </div>
+    <p id="result-message"></p>
+    <button id="next-btn" class="btn">Next Question</button>
+    <button id="restart-btn" class="btn">🔄 Restart Game</button>
+    
+    <div class="footer">
+        Made with ❤️ by Richman soene bereyin 
+    </div>
+</div>
+
+<audio id="correct-sound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+<audio id="wrong-sound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+
+<script>
+const quizData = {
+    1: [ { question: "What does HTML stand for?", options: ["Hyper Text Markup Language", "Home Tool Markup Language", "Hyperlinks and Text Markup Language", "Hyper Tool Multi Language"], answer: "Hyper Text Markup Language" },
+        { question: "Which tag is used to create a hyperlink?", options: ["<link>", "<a>", "<href>", "<url>"], answer: "<a>" },
+        { question: "What does CSS stand for?", options: ["Computer Style Sheets", "Creative Style System", "Cascading Style Sheets", "Colorful Style Sheets"], answer: "Cascading Style Sheets" },
+        { question: "Which HTML tag is used for the largest heading?", options: ["<h1>", "<h6>", "<heading>", "<head>"], answer: "<h1>" },
+        { question: "What is used to style a web page?", options: ["HTML", "CSS", "JavaScript", "PHP"], answer: "CSS" } ],
+    2: [ { question: "How do you write a comment in JavaScript?", options: ["// comment", "<!-- comment -->", "/* comment */", "# comment"], answer: "// comment" },
+        { question: "Which company developed JavaScript?", options: ["Microsoft", "Netscape", "Google", "Oracle"], answer: "Netscape" },
+        { question: "How do you declare a variable in JS?", options: ["var", "let", "const", "All of the above"], answer: "All of the above" },
+        { question: "What does console.log() do?", options: ["Prints to screen", "Prints to console", "Creates alert", "Reloads page"], answer: "Prints to console" },
+        { question: "Which symbol is used for 'equal to' in JS?", options: ["=", "==", "===", "!="], answer: "==" } ],
+    3: [ { question: "What does URL stand for?", options: ["Uniform Resource Locator", "Universal Resource Link", "United Resource Locator", "Uniform Registered Link"], answer: "Uniform Resource Locator" },
+        { question: "Which HTML tag is used for an image?", options: ["<img>", "<image>", "<pic>", "<src>"], answer: "<img>" },
+        { question: "What is the default display of a <div>?", options: ["inline", "block", "flex", "none"], answer: "block" },
+        { question: "Which property changes text color?", options: ["font-color", "text-color", "color", "background"], answer: "color" },
+        { question: "What does DOM stand for?", options: ["Document Object Model", "Data Object Model", "Digital Ordinance Model", "Desktop Oriented Model"], answer: "Document Object Model" } ],
+    4: [ { question: "Which tag makes text bold?", options: ["<b>", "<strong>", "Both a and b", "<bold>"], answer: "Both a and b" },
+        { question: "How do you make a list?", options: ["<ul>", "<ol>", "<li>", "Both a and b"], answer: "Both a and b" },
+        { question: "What does API stand for?", options: ["Application Programming Interface", "App Programming Info", "Application Process Interface", "App Process Info"], answer: "Application Programming Interface" },
+        { question: "Which is NOT a JS data type?", options: ["String", "Boolean", "Number", "Float"], answer: "Float" },
+        { question: "What is JSON?", options: ["Java Script Object Notation", "Java Standard Output Network", "JavaScript Oriented Notation", "Joint Script Object Name"], answer: "Java Script Object Notation" } ],
+    5: [ { question: "What is Git used for?", options: ["Styling", "Version Control", "Database", "Hosting"], answer: "Version Control" },
+        { question: "Which is a frontend framework?", options: ["Django", "React", "Laravel", "Flask"], answer: "React" },
+        { question: "What does SQL stand for?", options: ["Structured Query Language", "Simple Query Language", "Standard Query Logic", "Sequential Query Language"], answer: "Structured Query Language" },
+        { question: "Which is used for backend?", options: ["HTML", "CSS", "Node.js", "Bootstrap"], answer: "Node.js" },
+        { question: "What does responsive mean?", options: ["Fast loading", "Works on all devices", "Colorful", "Animated"], answer: "Works on all devices" } ],
+    6: [ { question: "Which tag is used to play video?", options: ["<media>", "<video>", "<movie>", "<play>"], answer: "<video>" },
+        { question: "What does <br> tag do?", options: ["Bold text", "Line break", "Big text", "Border"], answer: "Line break" },
+        { question: "Which attribute makes input required?", options: ["validate", "required", "important", "check"], answer: "required" },
+        { question: "What is the root HTML element?", options: ["<head>", "<body>", "<html>", "<root>"], answer: "<html>" },
+        { question: "Which tag is for a table row?", options: ["<td>", "<tr>", "<table>", "<row>"], answer: "<tr>" } ],
+    7: [ { question: "How do you select all <p> tags in CSS?", options: [".p", "#p", "p", "*p"], answer: "p" },
+        { question: "What does 'flex' do?", options: ["Makes text bold", "Creates flexible layout", "Adds shadow", "Changes color"], answer: "Creates flexible layout" },
+        { question: "Which unit is relative to screen size?", options: ["px", "cm", "vw", "pt"], answer: "vw" },
+        { question: "How to center text?", options: ["text-align: center", "align: center", "center: text", "float: center"], answer: "text-align: center" },
+        { question: "What does 'z-index' control?", options: ["Size", "Stacking order", "Zoom", "Border"], answer: "Stacking order" } ],
+    8: [ { question: "What does '===' mean?", options: ["Assign", "Equal value", "Equal value and type", "Not equal"], answer: "Equal value and type" },
+        { question: "How to create a function?", options: ["function myFunc()", "def myFunc()", "func myFunc()", "create myFunc()"], answer: "function myFunc()" },
+        { question: "What is an array?", options: ["Single value", "List of values", "Function", "Object"], answer: "List of values" },
+        { question: "Which method adds to end of array?", options: ["push()", "pop()", "shift()", "unshift()"], answer: "push()" },
+        { question: "What does 'typeof' do?", options: ["Changes type", "Checks data type", "Deletes type", "Creates type"], answer: "Checks data type" } ],
+    9: [ { question: "What is React?", options: ["Database", "JS Library", "CSS Framework", "Server"], answer: "JS Library" },
+        { question: "What is Bootstrap?", options: ["JS Framework", "CSS Framework", "Database", "Language"], answer: "CSS Framework" },
+        { question: "What does npm stand for?", options: ["Node Package Manager", "New Project Maker", "Node Program Method", "Network Package Module"], answer: "Node Package Manager" },
+        { question: "Which is a backend language?", options: ["Python", "CSS", "HTML", "Bootstrap"], answer: "Python" },
+        { question: "What is hosting?", options: ["Writing code", "Storing website online", "Designing UI", "Debugging"], answer: "Storing website online" } ],
+    10:[ { question: "What does SEO stand for?", options: ["Search Engine Optimization", "Secure Email Operation", "Site Engineering Output", "System Error Out"], answer: "Search Engine Optimization" },
+        { question: "What is a cookie in web?", options: ["Snack", "Small data file", "Virus", "Image"], answer: "Small data file" },
+        { question: "What does HTTPS do?", options: ["Makes site faster", "Encrypts connection", "Adds colors", "Stores data"], answer: "Encrypts connection" },
+        { question: "What is deployment?", options: ["Writing code", "Putting site live", "Testing bugs", "Designing"], answer: "Putting site live" },
+        { question: "What does CRUD mean?", options: ["Create Read Update Delete", "Copy Run Use Data", "Code Run Update Debug", "Connect Read Upload Download"], answer: "Create Read Update Delete" } ]
+};
+
+let currentLevel = 1;
+let currentQuestionIndex = 0;
+let currentScore = 0;
+let timer;
+let timeLeft = 30;
+
+const startScreen = document.getElementById('start-screen');
+const quizContainer = document.querySelector('.quiz-container');
+const questionElement = document.getElementById('question');
+const buttons = document.querySelectorAll('.option-btn');
+const resultMessage = document.getElementById('result-message');
+const nextButton = document.getElementById('next-btn');
+const restartButton = document.getElementById('restart-btn');
+const scoreDisplay = document.getElementById('score-display');
+const timerDisplay = document.getElementById('timer');
+const correctSound = document.getElementById('correct-sound');
+const wrongSound = document.getElementById('wrong-sound');
+
+function startGame() {
+    startScreen.style.display = 'none';
+    quizContainer.style.display = 'block';
+    loadQuestion();
+}
+
+function startTimer() {
+    timeLeft = 30;
+    timerDisplay.textContent = `Time: ${timeLeft}s`;
+    timer = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `Time: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            timeUp();
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timer);
+}
+
+function timeUp() {
+    buttons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.textContent === quizData[currentLevel][currentQuestionIndex].answer) 
+            btn.classList.add('correct');
+    });
+    resultMessage.textContent = `⏰ Time's Up! Ans: ${quizData[currentLevel][currentQuestionIndex].answer}`;
+    resultMessage.style.color = 'orange';
+    wrongSound.play();
+    nextButton.style.display = 'block';
+}
+
+function loadQuestion() {
+    resultMessage.textContent = '';
+    nextButton.style.display = 'none';
+    
+    const questions = quizData[currentLevel];
+    const q = questions[currentQuestionIndex];
+    
+    scoreDisplay.textContent = `Level: ${currentLevel} | Score: ${currentScore}`;
+    questionElement.textContent = q.question;
+    
+    buttons.forEach((button, index) => {
+        button.style.display = 'block';
+        button.disabled = false;
+        button.className = 'option-btn';
+        button.textContent = q.options[index];
+    });
+    startTimer();
+}
+
+buttons.forEach(button => {
+    button.addEventListener('click', function() {
+        stopTimer();
+        const q = quizData[currentLevel][currentQuestionIndex];
+        const selectedAnswer = button.textContent;
+        
+        buttons.forEach(btn => {
+            if (btn.textContent === q.answer) btn.classList.add('correct');
+            if (btn === button && selectedAnswer !== q.answer) btn.classList.add('wrong');
+            btn.disabled = true;
+        });
+        
+        if (selectedAnswer === q.answer) {
+            resultMessage.textContent = '✅ Correct!';
+            resultMessage.style.color = 'green';
+            currentScore++;
+            correctSound.play();
+        } else {
+            resultMessage.textContent = `❌ Wrong! Ans: ${q.answer}`;
+            resultMessage.style.color = 'red';
+            wrongSound.play();
+        }
+        nextButton.style.display = 'block';
+    });
+});
+
+nextButton.addEventListener('click', function() {
+    stopTimer();
+    currentQuestionIndex++;
+    
+    if (currentQuestionIndex < 5) {
+        loadQuestion();
+    } else {
+        if (currentLevel < 10) {
+            currentLevel++;
+            currentQuestionIndex = 0;
+            questionElement.textContent = `🎉 Level ${currentLevel-1} Complete!`;
+            resultMessage.textContent = `Starting Level ${currentLevel}`;
+            resultMessage.style.color = 'blue';
+            nextButton.textContent = 'Start Level ' + currentLevel;
+            buttons.forEach(btn => btn.style.display = 'none');
+        } else {
+            questionElement.textContent = '🏆 Game Completed!';
+            resultMessage.textContent = `Final Score: ${currentScore} / 50`;
+            resultMessage.style.color = 'blue';
+            buttons.forEach(btn => btn.style.display = 'none');
+            nextButton.style.display = 'none';
+            restartButton.style.display = 'block';
+        }
+    }
+});
+
+restartButton.addEventListener('click', function() {
+    currentLevel = 1;
+    currentQuestionIndex = 0;
+    currentScore = 0;
+    nextButton.textContent = 'Next Question';
+    restartButton.style.display = 'none';
+    loadQuestion();
+});
+</script>
+</body>
+  </html>
